@@ -1,22 +1,23 @@
-#include <igl/readOFF.h>
-#include <igl/viewer/Viewer.h>
-#include <igl/per_vertex_normals.h>
 #include <igl/avg_edge_length.h>
+#include <igl/per_vertex_normals.h>
+#include <igl/readOFF.h>
 #include <igl/embree/ambient_occlusion.h>
+#include <igl/viewer/Viewer.h>
 #include <iostream>
 
-using namespace Eigen;
-using namespace std;
+#include "tutorial_shared_path.h"
 
 // Mesh
 Eigen::MatrixXd V;
 Eigen::MatrixXi F;
 
-VectorXd AO;
+Eigen::VectorXd AO;
 
-  // It allows to change the degree of the field when a number is pressed
-bool key_down(igl::Viewer& viewer, unsigned char key, int modifier)
+// It allows to change the degree of the field when a number is pressed
+bool key_down(igl::viewer::Viewer& viewer, unsigned char key, int modifier)
 {
+  using namespace Eigen;
+  using namespace std;
   const RowVector3d color(0.9,0.85,0.9);
   switch(key)
   {
@@ -58,17 +59,17 @@ int main(int argc, char *argv[])
     "Press , to turn down lighting"<<endl;
 
   // Load a mesh in OFF format
-  igl::readOFF("../shared/fertility.off", V, F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/fertility.off", V, F);
 
   MatrixXd N;
   igl::per_vertex_normals(V,F,N);
 
   // Compute ambient occlusion factor using embree
-  igl::ambient_occlusion(V,F,V,N,500,AO);
+  igl::embree::ambient_occlusion(V,F,V,N,500,AO);
   AO = 1.0 - AO.array();
 
   // Show mesh
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(V, F);
   viewer.callback_key_down = &key_down;
   key_down(viewer,'2',0);

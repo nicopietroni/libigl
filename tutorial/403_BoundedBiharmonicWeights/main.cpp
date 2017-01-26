@@ -1,7 +1,12 @@
-// Don't use static library for this example because of Mosek complications
+// If you don't have mosek installed and don't want to install it. Then
+// uncomment the following six lines.  Don't use static library for this
+// example because of Mosek complications
+//
 //#define IGL_NO_MOSEK
 //#ifdef IGL_NO_MOSEK
+//#ifdef IGL_STATIC_LIBRARY
 //#undef IGL_STATIC_LIBRARY
+//#endif
 //#endif
 #include <igl/boundary_conditions.h>
 #include <igl/colon.h>
@@ -16,7 +21,8 @@
 #include <igl/readMESH.h>
 #include <igl/readTGF.h>
 #include <igl/viewer/Viewer.h>
-#include <igl/bbw/bbw.h>
+#include <igl/bbw.h>
+//#include <igl/embree/bone_heat.h>
 
 #include <Eigen/Geometry>
 #include <Eigen/StdVector>
@@ -24,7 +30,9 @@
 #include <algorithm>
 #include <iostream>
 
-typedef 
+#include "tutorial_shared_path.h"
+
+typedef
   std::vector<Eigen::Quaterniond,Eigen::aligned_allocator<Eigen::Quaterniond> >
   RotationList;
 
@@ -37,7 +45,7 @@ RotationList pose;
 double anim_t = 1.0;
 double anim_t_dir = -0.03;
 
-bool pre_draw(igl::Viewer & viewer)
+bool pre_draw(igl::viewer::Viewer & viewer)
 {
   using namespace Eigen;
   using namespace std;
@@ -70,7 +78,7 @@ bool pre_draw(igl::Viewer & viewer)
     MatrixXd CT;
     MatrixXi BET;
     igl::deform_skeleton(C,BE,T,CT,BET);
-    
+
     viewer.data.set_vertices(U);
     viewer.data.set_edges(CT,BET,sea_green);
     viewer.data.compute_normals();
@@ -80,14 +88,14 @@ bool pre_draw(igl::Viewer & viewer)
   return false;
 }
 
-void set_color(igl::Viewer &viewer)
+void set_color(igl::viewer::Viewer &viewer)
 {
   Eigen::MatrixXd C;
   igl::jet(W.col(selected).eval(),true,C);
   viewer.data.set_colors(C);
 }
 
-bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
+bool key_down(igl::viewer::Viewer &viewer, unsigned char key, int mods)
 {
   switch(key)
   {
@@ -105,21 +113,22 @@ bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
       set_color(viewer);
       break;
   }
+  return true;
 }
 
 int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
-  igl::readMESH("../shared/hand.mesh",V,T,F);
+  igl::readMESH(TUTORIAL_SHARED_PATH "/hand.mesh",V,T,F);
   U=V;
-  igl::readTGF("../shared/hand.tgf",C,BE);
+  igl::readTGF(TUTORIAL_SHARED_PATH "/hand.tgf",C,BE);
   // retrieve parents for forward kinematics
   igl::directed_edge_parents(BE,P);
 
   // Read pose as matrix of quaternions per row
   MatrixXd Q;
-  igl::readDMAT("../shared/hand-pose.dmat",Q);
+  igl::readDMAT(TUTORIAL_SHARED_PATH "/hand-pose.dmat",Q);
   igl::column_to_quats(Q,pose);
   assert(pose.size() == BE.rows());
 
@@ -138,20 +147,29 @@ int main(int argc, char *argv[])
   {
     return false;
   }
+
+  //MatrixXd Vsurf = V.topLeftCorner(F.maxCoeff()+1,V.cols());
+  //MatrixXd Wsurf;
+  //if(!igl::bone_heat(Vsurf,F,C,VectorXi(),BE,MatrixXi(),Wsurf))
+  //{
+  //  return false;
+  //}
+  //W.setConstant(V.rows(),Wsurf.cols(),1);
+  //W.topLeftCorner(Wsurf.rows(),Wsurf.cols()) = Wsurf = Wsurf = Wsurf = Wsurf;
+
   // Normalize weights to sum to one
   igl::normalize_row_sums(W,W);
   // precompute linear blend skinning matrix
   igl::lbs_matrix(V,W,M);
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(U, F);
   set_color(viewer);
   viewer.data.set_edges(C,BE,sea_green);
   viewer.core.show_lines = false;
   viewer.core.show_overlay_depth = false;
   viewer.core.line_width = 1;
-  viewer.core.trackball_angle.normalize();
   viewer.callback_pre_draw = &pre_draw;
   viewer.callback_key_down = &key_down;
   viewer.core.is_animating = false;

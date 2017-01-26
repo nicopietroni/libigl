@@ -1,6 +1,6 @@
 // This file is part of libigl, a simple c++ geometry processing library.
 // 
-// Copyright (C) 2013 Alec Jacobson <alecjacobson@gmail.com>
+// Copyright (C) 2014 Alec Jacobson <alecjacobson@gmail.com>
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public License 
 // v. 2.0. If a copy of the MPL was not distributed with this file, You can 
@@ -43,12 +43,10 @@ namespace igl
   // therefore in general negative and the matrix is **negative** semi-definite
   // (immediately, -L is **positive** semi-definite)
   //
-  // Known bugs: off by 1e-16 on regular grid. I think its a problem of
-  // arithmetic order in cotmatrix_entries.h: C(i,e) = (arithmetic)/dblA/4
   template <typename DerivedV, typename DerivedF, typename Scalar>
   IGL_INLINE void cotmatrix(
-    const Eigen::PlainObjectBase<DerivedV> & V, 
-    const Eigen::PlainObjectBase<DerivedF> & F, 
+    const Eigen::MatrixBase<DerivedV> & V, 
+    const Eigen::MatrixBase<DerivedF> & F, 
     Eigen::SparseMatrix<Scalar>& L);
 }
 

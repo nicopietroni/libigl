@@ -1,11 +1,12 @@
+#include <igl/barycenter.h>
+#include <igl/colon.h>
+#include <igl/jet.h>
 #include <igl/readOFF.h>
 #include <igl/slice_into.h>
-#include <igl/colon.h>
 #include <igl/sortrows.h>
-#include <igl/barycenter.h>
-#include <igl/jet.h>
 #include <igl/viewer/Viewer.h>
 #include <iostream>
+#include "tutorial_shared_path.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
   using namespace std;
   MatrixXd V;
   MatrixXi F;
-  igl::readOFF("../shared/decimated-knight.off",V,F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/decimated-knight.off",V,F);
 
   // Sort barycenters lexicographically
   MatrixXd BC,sorted_BC;
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
   igl::jet(J,true,C);
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(V, F);
   viewer.data.set_colors(C);
   viewer.launch();

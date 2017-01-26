@@ -13,6 +13,7 @@
 #  include <Eigen/Core>
 #endif
 #include <string>
+#include <cstdio>
 #include <vector>
 // History:
 //  renamed read -> read_triangle_mesh     Daniele 24 June 2014
@@ -20,16 +21,19 @@
 
 namespace igl
 {
-  // read mesh from an ascii file with automatic detection of file format. supported: obj, off)
+  // read mesh from an ascii file with automatic detection of file format.
+  // supported: obj, off, stl, wrl, ply, mesh)
+  // 
   // Templates:
   //   Scalar  type for positions and vectors (will be read as double and cast
   //     to Scalar)
   //   Index  type for indices (will be read as int and cast to Index)
   // Inputs:
-  //   str  path to .obj/.off file
+  //   str  path to file
   // Outputs:
   //   V  eigen double matrix #V by 3
   //   F  eigen int matrix #F by 3
+  // Returns true iff success
   template <typename Scalar, typename Index>
   IGL_INLINE bool read_triangle_mesh(
     const std::string str,
@@ -55,6 +59,17 @@ namespace igl
     std::string & base,
     std::string & ext,
     std::string & name);
+  // Inputs:
+  //   ext  file extension
+  //   fp  pointer to already opened .ext file 
+  // Outputs:
+  //   fp  closed file
+  template <typename DerivedV, typename DerivedF>
+  IGL_INLINE bool read_triangle_mesh(
+    const std::string & ext,
+    FILE * fp,
+    Eigen::PlainObjectBase<DerivedV>& V,
+    Eigen::PlainObjectBase<DerivedF>& F);
 #endif
 }
 

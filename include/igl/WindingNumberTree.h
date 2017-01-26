@@ -12,9 +12,13 @@
 #include <Eigen/Dense>
 #include "WindingNumberMethod.h"
 
-static Eigen::MatrixXd dummyV;
 namespace igl
 {
+  // This is only need to fill in references, it should never actually be touched
+  // and shouldn't cause race conditions. (This is a hack, but I think it's "safe")
+  static Eigen::MatrixXd dummyV;
+  // Space partitioning tree for computing winding number hierarchically.
+  //
   // Templates:
   //   Point  type for points in space, e.g. Eigen::Vector3d
   template <typename Point>
@@ -45,7 +49,7 @@ namespace igl
       // (Approximate) center (of mass)
       Point center;
     public:
-      inline WindingNumberTree():V(dummyV){}
+      inline WindingNumberTree();
       // For root
       inline WindingNumberTree(
         const Eigen::MatrixXd & V,
@@ -55,6 +59,7 @@ namespace igl
         const WindingNumberTree<Point> & parent,
         const Eigen::MatrixXi & F);
       inline virtual ~WindingNumberTree();
+      inline void delete_children();
       inline virtual void set_mesh(
         const Eigen::MatrixXd & V,
         const Eigen::MatrixXi & F);
@@ -143,12 +148,26 @@ std::map< std::pair<const igl::WindingNumberTree<Point>*,const igl::WindingNumbe
   igl::WindingNumberTree<Point>::cached;
 
 template <typename Point>
+inline igl::WindingNumberTree<Point>::WindingNumberTree():
+  method(EXACT_WINDING_NUMBER_METHOD),
+  parent(NULL),
+  V(igl::dummyV),
+  SV(),
+  F(),
+  //boundary(igl::boundary_facets<Eigen::MatrixXi,Eigen::MatrixXi>(F))
+  cap(),
+  radius(std::numeric_limits<double>::infinity()),
+  center(0,0,0)
+{
+}
+
+template <typename Point>
 inline igl::WindingNumberTree<Point>::WindingNumberTree(
   const Eigen::MatrixXd & _V,
   const Eigen::MatrixXi & _F):
   method(EXACT_WINDING_NUMBER_METHOD),
   parent(NULL),
-  V(dummyV),
+  V(igl::dummyV),
   SV(),
   F(),
   //boundary(igl::boundary_facets<Eigen::MatrixXi,Eigen::MatrixXi>(F))
@@ -170,7 +189,7 @@ inline void igl::WindingNumberTree<Point>::set_mesh(
   // Q: Would we gain even more by remove almost exactly duplicate vertices?
   Eigen::MatrixXi SF,SVI,SVJ;
   igl::remove_duplicate_vertices(_V,_F,0.0,SV,SVI,SVJ,F);
-  triangle_fan(exterior_edges(F),cap);
+  triangle_fan(igl::exterior_edges(F),cap);
   V = SV;
 }
 
@@ -183,12 +202,18 @@ inline igl::WindingNumberTree<Point>::WindingNumberTree(
   V(parent.V),
   SV(),
   F(_F),
-  cap(triangle_fan(exterior_edges(_F)))
+  cap(triangle_fan(igl::exterior_edges(_F)))
 {
 }
 
 template <typename Point>
 inline igl::WindingNumberTree<Point>::~WindingNumberTree()
+{
+  delete_children();
+}
+
+template <typename Point>
+inline void igl::WindingNumberTree<Point>::delete_children()
 {
   using namespace std;
   // Delete children
@@ -388,13 +413,16 @@ inline void igl::WindingNumberTree<Point>::print(const char * tab)
 }
 
 template <typename Point>
-inline double igl::WindingNumberTree<Point>::max_abs_winding_number(const Point & p) const
+inline double 
+igl::WindingNumberTree<Point>::max_abs_winding_number(const Point & /*p*/) const
 {
   return std::numeric_limits<double>::infinity();
 }
 
 template <typename Point>
-inline double igl::WindingNumberTree<Point>::max_simple_abs_winding_number(const Point & p) const
+inline double 
+igl::WindingNumberTree<Point>::max_simple_abs_winding_number(
+  const Point & /*p*/) const
 {
   using namespace std;
   return numeric_limits<double>::infinity();
@@ -406,8 +434,8 @@ inline double igl::WindingNumberTree<Point>::cached_winding_number(
   const Point & p) const
 {
   using namespace std;
-  using namespace igl;
-  // Simple metric for "far".
+  // Simple metric for `is_far`
+  //
   //   this             that
   //                   --------
   //   -----          /   |    \ .
@@ -423,17 +451,17 @@ inline double igl::WindingNumberTree<Point>::cached_winding_number(
   // a = atan2(R-r,d), where d is the distance between centers
 
   // That should be bigger (what about parent? what about sister?)
-  bool far = this->radius<that.radius;
-  if(far)
+  bool is_far = this->radius<that.radius;
+  if(is_far)
   {
     double a = atan2(
       that.radius - this->radius,
       (that.center - this->center).norm());
     assert(a>0);
-    far = (a<PI/8.0);
+    is_far = (a<PI/8.0);
   }
 
-  if(far)
+  if(is_far)
   {
     // Not implemented yet
     pair<const WindingNumberTree*,const WindingNumberTree*> this_that(this,&that);

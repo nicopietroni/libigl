@@ -4,6 +4,7 @@
 #include <igl/viewer/Viewer.h>
 #include <algorithm>
 #include <iostream>
+#include "tutorial_shared_path.h"
 
 double z_max = 1.0;
 double z_dir = -0.03;
@@ -15,7 +16,7 @@ Eigen::MatrixXi F;
 Eigen::VectorXi b;
 Eigen::VectorXd bc;
 
-bool pre_draw(igl::Viewer & viewer)
+bool pre_draw(igl::viewer::Viewer & viewer)
 {
   using namespace Eigen;
   if(resolve)
@@ -34,7 +35,7 @@ bool pre_draw(igl::Viewer & viewer)
   return false;
 }
 
-bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
+bool key_down(igl::viewer::Viewer &viewer, unsigned char key, int mods)
 {
   switch(key)
   {
@@ -52,13 +53,14 @@ bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
       resolve = true;
       break;
   }
+  return true;
 }
 
 int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
-  igl::readOBJ("../shared/bump-domain.obj",V,F);
+  igl::readOBJ(TUTORIAL_SHARED_PATH "/bump-domain.obj",V,F);
   U=V;
   // Find boundary vertices outside annulus
   typedef Matrix<bool,Dynamic,1> VectorXb;
@@ -66,7 +68,7 @@ int main(int argc, char *argv[])
   VectorXb is_inner = (V.rowwise().norm().array()-0.15)<1e-15;
   VectorXb in_b = is_outer.array() || is_inner.array();
   igl::colon<int>(0,V.rows()-1,b);
-  b.conservativeResize(stable_partition( b.data(), b.data()+b.size(), 
+  b.conservativeResize(stable_partition( b.data(), b.data()+b.size(),
    [&in_b](int i)->bool{return in_b(i);})-b.data());
   bc.resize(b.size(),1);
   for(int bi = 0;bi<b.size();bi++)
@@ -91,11 +93,11 @@ int main(int argc, char *argv[])
   }
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(U, F);
   viewer.core.show_lines = false;
   viewer.data.set_colors(C);
-  viewer.core.trackball_angle << -0.58,-0.03,-0.03,0.81;
+  viewer.core.trackball_angle = Eigen::Quaternionf(0.81,-0.58,-0.03,-0.03);
   viewer.core.trackball_angle.normalize();
   viewer.callback_pre_draw = &pre_draw;
   viewer.callback_key_down = &key_down;

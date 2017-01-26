@@ -1,9 +1,11 @@
+#include <igl/arap.h>
+#include <igl/boundary_loop.h>
+#include <igl/harmonic.h>
+#include <igl/map_vertices_to_circle.h>
 #include <igl/readOFF.h>
 #include <igl/viewer/Viewer.h>
-#include <igl/boundary_loop.h>
-#include <igl/map_vertices_to_circle.h>
-#include <igl/harmonic.h>
-#include <igl/svd3x3/arap.h>
+
+#include "tutorial_shared_path.h"
 
 Eigen::MatrixXd V;
 Eigen::MatrixXi F;
@@ -12,7 +14,7 @@ Eigen::MatrixXd initial_guess;
 
 bool show_uv = false;
 
-bool key_down(igl::Viewer& viewer, unsigned char key, int modifier)
+bool key_down(igl::viewer::Viewer& viewer, unsigned char key, int modifier)
 {
   if (key == '1')
     show_uv = false;
@@ -42,11 +44,11 @@ int main(int argc, char *argv[])
 {
   using namespace std;
   // Load a mesh in OFF format
-  igl::readOFF("../shared/camelhead.off", V, F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/camelhead.off", V, F);
 
   // Compute the initial solution for ARAP (harmonic parametrization)
   Eigen::VectorXi bnd;
-  igl::boundary_loop(V,F,bnd);
+  igl::boundary_loop(F,bnd);
   Eigen::MatrixXd bnd_uv;
   igl::map_vertices_to_circle(V,bnd,bnd_uv);
 
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
   V_uv *= 20;
 
   // Plot the mesh
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(V, F);
   viewer.data.set_uv(V_uv);
   viewer.callback_key_down = &key_down;

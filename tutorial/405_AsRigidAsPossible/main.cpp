@@ -8,7 +8,7 @@
 #include <igl/dqs.h>
 #include <igl/readDMAT.h>
 #include <igl/readOFF.h>
-#include <igl/svd3x3/arap.h>
+#include <igl/arap.h>
 #include <igl/viewer/Viewer.h>
 
 #include <Eigen/Geometry>
@@ -16,6 +16,8 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+
+#include "tutorial_shared_path.h"
 
 typedef 
   std::vector<Eigen::Quaterniond,Eigen::aligned_allocator<Eigen::Quaterniond> >
@@ -30,7 +32,7 @@ double anim_t = 0.0;
 double anim_t_dir = 0.03;
 igl::ARAPData arap_data;
 
-bool pre_draw(igl::Viewer & viewer)
+bool pre_draw(igl::viewer::Viewer & viewer)
 {
   using namespace Eigen;
   using namespace std;
@@ -75,7 +77,7 @@ bool pre_draw(igl::Viewer & viewer)
   return false;
 }
 
-bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
+bool key_down(igl::viewer::Viewer &viewer, unsigned char key, int mods)
 {
   switch(key)
   {
@@ -90,9 +92,9 @@ int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
-  igl::readOFF("../shared/decimated-knight.off",V,F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/decimated-knight.off",V,F);
   U=V;
-  igl::readDMAT("../shared/decimated-knight-selection.dmat",S);
+  igl::readDMAT(TUTORIAL_SHARED_PATH "/decimated-knight-selection.dmat",S);
 
   // vertices in selection
   igl::colon<int>(0,V.rows()-1,b);
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
   }
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(U, F);
   viewer.data.set_colors(C);
   viewer.callback_pre_draw = &pre_draw;

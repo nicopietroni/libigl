@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include "tutorial_shared_path.h"
+
 typedef 
   std::vector<Eigen::Quaterniond,Eigen::aligned_allocator<Eigen::Quaterniond> >
   RotationList;
@@ -30,7 +32,7 @@ double anim_t_dir = 0.015;
 bool use_dqs = false;
 bool recompute = true;
 
-bool pre_draw(igl::Viewer & viewer)
+bool pre_draw(igl::viewer::Viewer & viewer)
 {
   using namespace Eigen;
   using namespace std;
@@ -90,7 +92,7 @@ bool pre_draw(igl::Viewer & viewer)
   return false;
 }
 
-bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
+bool key_down(igl::viewer::Viewer &viewer, unsigned char key, int mods)
 {
   recompute = true;
   switch(key)
@@ -110,9 +112,9 @@ int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
-  igl::readOBJ("../shared/arm.obj",V,F);
+  igl::readOBJ(TUTORIAL_SHARED_PATH "/arm.obj",V,F);
   U=V;
-  igl::readTGF("../shared/arm.tgf",C,BE);
+  igl::readTGF(TUTORIAL_SHARED_PATH "/arm.tgf",C,BE);
   // retrieve parents for forward kinematics
   igl::directed_edge_parents(BE,P);
   RotationList rest_pose;
@@ -124,11 +126,11 @@ int main(int argc, char *argv[])
   const Quaterniond bend(AngleAxisd(-igl::PI*0.7,Vector3d(0,0,1)));
   poses[3][2] = rest_pose[2]*bend*rest_pose[2].conjugate();
 
-  igl::readDMAT("../shared/arm-weights.dmat",W);
+  igl::readDMAT(TUTORIAL_SHARED_PATH "/arm-weights.dmat",W);
   igl::lbs_matrix(V,W,M);
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(U, F);
   viewer.data.set_edges(C,BE,sea_green);
   viewer.core.show_lines = false;

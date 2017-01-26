@@ -11,13 +11,10 @@
 
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
-#include <vector>
-#include <stdio.h>
-#include <map>
 
-#include <igl/igl_inline.h>
-#include <igl/cotmatrix.h>
-#include <igl/writeOFF.h>
+#include "igl_inline.h"
+//#include <igl/cotmatrix.h>
+//#include <igl/writeOFF.h>
 
 
 
@@ -45,7 +42,6 @@ namespace igl
   // Efficient Multi-scale Curvature and Crease Estimation
   // Daniele Panozzo, Enrico Puppo, Luigi Rocca
   // GraVisMa, 2010
-
 template <
   typename DerivedV, 
   typename DerivedF,

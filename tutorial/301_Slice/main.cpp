@@ -1,9 +1,10 @@
+#include <igl/floor.h>
 #include <igl/readOFF.h>
 #include <igl/slice.h>
-#include <igl/floor.h>
 #include <igl/slice_into.h>
 #include <igl/viewer/Viewer.h>
 #include <iostream>
+#include "tutorial_shared_path.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,7 +12,7 @@ int main(int argc, char *argv[])
   using namespace std;
   MatrixXd V;
   MatrixXi F;
-  igl::readOFF("../shared/decimated-knight.off",V,F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/decimated-knight.off",V,F);
 
   // 100 random indicies into rows of F
   VectorXi I;
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
   igl::slice_into(R,K,1,C);
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(V, F);
   viewer.data.set_colors(C);
   viewer.launch();

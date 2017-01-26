@@ -1,7 +1,9 @@
 #include <igl/viewer/Viewer.h>
-#include <igl/tetgen/tetrahedralize.h>
+#include <igl/copyleft/tetgen/tetrahedralize.h>
 #include <igl/readOFF.h>
 #include <igl/barycenter.h>
+
+#include "tutorial_shared_path.h"
 
 // Input polygon
 Eigen::MatrixXd V;
@@ -14,7 +16,7 @@ Eigen::MatrixXi TT;
 Eigen::MatrixXi TF;
 
 // This function is called every time a keyboard button is pressed
-bool key_down(igl::Viewer& viewer, unsigned char key, int modifier)
+bool key_down(igl::viewer::Viewer& viewer, unsigned char key, int modifier)
 {
   using namespace std;
   using namespace Eigen;
@@ -62,16 +64,16 @@ int main(int argc, char *argv[])
   using namespace std;
 
   // Load a surface mesh
-  igl::readOFF("../shared/fertility.off",V,F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/fertility.off",V,F);
 
   // Tetrahedralize the interior
-  igl::tetrahedralize(V,F,"pq1.414", TV,TT,TF);
+  igl::copyleft::tetgen::tetrahedralize(V,F,"pq1.414Y", TV,TT,TF);
 
   // Compute barycenters
   igl::barycenter(TV,TT,B);
 
   // Plot the generated mesh
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.callback_key_down = &key_down;
   key_down(viewer,'5',0);
   viewer.launch();

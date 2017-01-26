@@ -8,13 +8,15 @@
 #include <igl/viewer/Viewer.h>
 #include <Eigen/Sparse>
 #include <iostream>
+#include "tutorial_shared_path.h"
+
 int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
   MatrixXd V;
   MatrixXi F;
-  igl::readOFF("../shared/cheburashka.off",V,F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/cheburashka.off",V,F);
 
   // Two fixed points
   VectorXi b(2,1);
@@ -70,13 +72,13 @@ int main(int argc, char *argv[])
   igl::jet(Z_const,min_z,max_z,data.C_const);
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(V, F);
   viewer.core.show_lines = false;
   viewer.data.set_colors(data.C);
 
   viewer.callback_key_down = 
-    [](igl::Viewer& viewer,unsigned char key,int mod)->bool
+    [](igl::viewer::Viewer& viewer,unsigned char key,int mod)->bool
     {
       if(key == ' ')
       {

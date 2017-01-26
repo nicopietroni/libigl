@@ -5,6 +5,7 @@
 #include <igl/viewer/Viewer.h>
 #include <algorithm>
 #include <iostream>
+#include "tutorial_shared_path.h"
 
 double bc_frac = 1.0;
 double bc_dir = -0.03;
@@ -14,7 +15,7 @@ Eigen::VectorXd Z;
 Eigen::MatrixXi F;
 Eigen::VectorXi b;
 
-bool pre_draw(igl::Viewer & viewer)
+bool pre_draw(igl::viewer::Viewer & viewer)
 {
   using namespace Eigen;
   // Determine boundary conditions
@@ -33,38 +34,39 @@ bool pre_draw(igl::Viewer & viewer)
     U = V+D;
   }else
   {
-    igl::harmonic(V,F,b,U_bc_anim,2,U);
+    igl::harmonic(V,F,b,U_bc_anim,2.,U);
   }
   viewer.data.set_vertices(U);
   viewer.data.compute_normals();
   return false;
 }
 
-bool key_down(igl::Viewer &viewer, unsigned char key, int mods)
+bool key_down(igl::viewer::Viewer &viewer, unsigned char key, int mods)
 {
   switch(key)
   {
     case ' ':
       viewer.core.is_animating = !viewer.core.is_animating;
-      break;
+      return true;
     case 'D':
     case 'd':
       deformation_field = !deformation_field;
-      break;
+      return true;
   }
+  return false;
 }
 
 int main(int argc, char *argv[])
 {
   using namespace Eigen;
   using namespace std;
-  igl::readOBJ("../shared/decimated-max.obj",V,F);
+  igl::readOBJ(TUTORIAL_SHARED_PATH "/decimated-max.obj",V,F);
   U=V;
   // S(i) = j: j<0 (vertex i not in handle), j >= 0 (vertex i in handle j)
   VectorXi S;
-  igl::readDMAT("../shared/decimated-max-selection.dmat",S);
+  igl::readDMAT(TUTORIAL_SHARED_PATH "/decimated-max-selection.dmat",S);
   igl::colon<int>(0,V.rows()-1,b);
-  b.conservativeResize(stable_partition( b.data(), b.data()+b.size(), 
+  b.conservativeResize(stable_partition( b.data(), b.data()+b.size(),
    [&S](int i)->bool{return S(i)>=0;})-b.data());
 
   // Boundary conditions directly on deformed positions
@@ -107,11 +109,11 @@ int main(int argc, char *argv[])
   }
 
   // Plot the mesh with pseudocolors
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(U, F);
   viewer.core.show_lines = false;
   viewer.data.set_colors(C);
-  viewer.core.trackball_angle << 0,sqrt(2.0),0,sqrt(2.0);
+  viewer.core.trackball_angle = Eigen::Quaternionf(sqrt(2.0),0,sqrt(2.0),0);
   viewer.core.trackball_angle.normalize();
   viewer.callback_pre_draw = &pre_draw;
   viewer.callback_key_down = &key_down;

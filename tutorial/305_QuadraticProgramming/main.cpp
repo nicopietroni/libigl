@@ -8,13 +8,13 @@
 #include <igl/viewer/Viewer.h>
 #include <Eigen/Sparse>
 #include <iostream>
-
+#include "tutorial_shared_path.h"
   
 Eigen::VectorXi b;
 Eigen::VectorXd B,bc,lx,ux,Beq,Bieq,Z;
 Eigen::SparseMatrix<double> Q,Aeq,Aieq;
 
-void solve(igl::Viewer &viewer)
+void solve(igl::viewer::Viewer &viewer)
 {
   using namespace std;
   igl::active_set_params as;
@@ -26,7 +26,7 @@ void solve(igl::Viewer &viewer)
   viewer.data.set_colors(C);
 }
 
-bool key_down(igl::Viewer &viewer, unsigned char key, int mod)
+bool key_down(igl::viewer::Viewer &viewer, unsigned char key, int mod)
 {
   switch(key)
   {
@@ -53,10 +53,10 @@ int main(int argc, char *argv[])
   using namespace std;
   MatrixXd V;
   MatrixXi F;
-  igl::readOFF("../shared/cheburashka.off",V,F);
+  igl::readOFF(TUTORIAL_SHARED_PATH "/cheburashka.off",V,F);
 
   // Plot the mesh
-  igl::Viewer viewer;
+  igl::viewer::Viewer viewer;
   viewer.data.set_mesh(V, F);
   viewer.core.show_lines = false;
   viewer.callback_key_down = &key_down;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   // Equality constraint constrain solution to sum to 1
   Beq.resize(1,1);
   Beq(0) = 0.08;
-  Aeq = M.diagonal().transpose().sparseView();
+  Aeq = M.diagonal().sparseView().transpose();
   // (Empty inequality constraints)
   solve(viewer);
   cout<<

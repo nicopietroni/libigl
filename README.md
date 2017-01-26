@@ -1,26 +1,57 @@
-libigl - A simple c++ geometry processing library
-=================================================
+# libigl - A simple C++ geometry processing library
+[![Build Status](https://travis-ci.org/libigl/libigl.svg?branch=master)](https://travis-ci.org/libigl/libigl)
+[![Build status](https://ci.appveyor.com/api/projects/status/mf3t9rnhco0vhly8?svg=true)](https://ci.appveyor.com/project/danielepanozzo/libigl-6hjk1)
+![](libigl-teaser.png)
 
-<http://igl.ethz.ch/projects/libigl/>
-<https://github.com/alecjacobson/libigl/>
+<https://github.com/libigl/libigl/>
 
-Copyright 2014 - Alec Jacobson, Daniele Panozzo, Olga Diamanti, Kenshi
-Takayama, Leo Sacht, Wenzel Jacob, etc.
+> Get started with:
+>
+```bash
+git clone --recursive https://github.com/libigl/libigl.git
+```
 
-This is first and foremost a *header* library. Each header file should contain
-a single function.  The function may have multiple prototypes. All functions
-should use the igl namespace and should adhere to the conventions and styles
-listed below.
+libigl is a simple C++ geometry processing library. We have a wide
+functionality including construction of sparse discrete differential geometry
+operators and finite-elements matrices such as the cotangent Laplacian and
+diagonalized mass matrix, simple facet and edge-based topology data structures,
+mesh-viewing utilities for OpenGL and GLSL, and many core functions for matrix
+manipulation which make [Eigen](http://eigen.tuxfamily.org) feel a lot more
+like MATLAB.
 
-> **New:** As of 1 July 2014, we have released libigl as beta version 1.0.
-> There are a number of changes we collected for this release to minimize
-> confusion and changes to how you use libigl. See [Version 1.0
-> Changes][version1.0changes].
+It is **a header-only library**. You do not need to compile anything to use,
+just include igl headers (e.g. `#include <igl/cotmatrix.h>`) and run.  Each
+header file contains a single function (e.g. `igl/cotmatrix.h` contains
+`igl::cotmatrix()`). Most are tailored to operate on a generic triangle mesh
+stored in an n-by-3 matrix of vertex positions `V` and an m-by-3 matrix of
+triangle indices `F`.
 
-## Installation ##
-Libigl is a *header* library. You do **not** need to build anything to install.
-Simple add `igl/` to your include path and include relevant headers. Here's a
-small "Hello, World" program:
+_Optionally_ the library may also be [pre-compiled](optional/) into a statically
+linked library, for faster compile times with your projects. This only effects
+compile time (run-time performance and behavior is identical). If in doubt, use
+the header-only default mode: (i.e. just include the headers you want to use).
+
+We use the [Eigen](http://eigen.tuxfamily.org) library heavily in our code. Our
+group prototypes a lot in MATLAB, and we have a useful [MATLAB to libigl+Eigen
+conversion table](matlab-to-eigen.html).
+
+We regularly test compiling our library on Mac OS X with clang, Linux with gcc
+and Windows with Visual Studio 2015 Community Edition.
+
+## Tutorial
+
+As of version 1.0, libigl includes an introductory
+[tutorial](http://libigl.github.io/libigl/tutorial/tutorial.html) that covers many functionalities.
+
+## libigl example project
+
+We provide a [blank project example](https://github.com/libigl/libigl-example-project) showing how to use libigl and cmake. Feel free and encouraged to copy or fork this project as a way of starting a new personal project using libigl.
+
+## Installation
+
+Libigl is a **header-only** library. You do **not** need to build anything to
+install.  Simply add `libigl/include` to your include path and include relevant
+headers.  Here is a small "Hello, World" program:
 
 ```cpp
 #include <igl/cotmatrix.h>
@@ -44,11 +75,11 @@ int main()
 }
 ```
 
-If you save this in `hello.cpp`, then on `gcc` with Eigen installed via
-macports for example you could compile this with:
+If you save this in `hello.cpp`, then you could compile this with (assuming
+Eigen is installed in `/usr/local/include/eigen3`):
 
 ```bash
-gcc -I/opt/local/include/eigen3 -I./igl/ hello.cpp -o hello
+g++ -std=c++11 -I/usr/local/include/eigen3 -I./libigl/include/ hello.cpp -o hello
 ```
 
 Running `./hello` would then produce
@@ -61,343 +92,95 @@ Hello, mesh:
  0.5 -0.5
 ```
 
-## Tutorial ##
-
-As of version 1.0, libigl includes an introductory tutorial that covers its basic
-functionalities. See [tutorial/tutorial.md](./tutorial/tutorial.md) to get started.
-
-## Dependencies ##
-- Eigen3  Last tested with Eigen Version 3.2
-
-### Optional ###
-- OpenGL (disable with `IGL_NO_OPENGL`)
-    * OpenGL >= 4 (enable with `IGL_OPENGL_4`)
-- AntTweakBar  (disable with `IGL_NO_ANTTWEAKBAR`) Last tested 1.16 (see
-  `libigl/external/AntTweakBar`)
-- GLEW  Windows and Linux
-- OpenMP
-- libpng  libiglpng extra only
-- Mosek  libiglmosek extra only
-- Matlab  libiglmatlab extra only
-- boost  libiglboost, libiglcgal extra only
-- SSE/AVX  libiglsvd3x3 extra only
-- CGAL  libiglcgal extra only
-    * boost
-    * gmp
-    * mpfr
-- CoMiSo libcomiso extra only
-
-### Optional (included in external/) ###
-- TetGen  libigltetgen extra only
-- Embree  libiglembree extra only
-- tinyxml2  libiglxml extra only
-- glfw libviewer extra only
-- LIM  liblim extra only
-
-## Header only ##
-Libigl is designed to work "out-of-the-box" as a headers only library. To
-include libigl in your project. You need only include the libigl/include/
-directory in your include path. To
-compile a hello-word example.cpp:
-
-    #include <Eigen/Dense>
-    #include <igl/readOBJ.h>
-    #include <iostream>
-    int main(int argc, char * argv[])
-    {
-      if(argc>1)
-      {
-        Eigen::MatrixXd V;
-        Eigen::MatrixXi F;
-        igl::readOBJ(argv[1],V,F);
-        std::cout<<"Hello, mesh with "<<V.rows()<<" vertices!"<<std::endl;
-      }else{
-        std::cout<<"Hello, world!"<<std::endl;
-      }
-      return 0;
-    }
-
-using gcc (replacing appropriate paths):
-
-    g++ -I/usr/local/igl/libigl/include \
-      -I/opt/local/include/eigen3 example.cpp -o example
-
-Then run this example with:
-
-    ./example examples/shared/TinyTorus.obj
-
-## Compilation as a static library ##
-Libigl is developed most often on Mac OS X, though has current users in Linux
-and Windows.
-
-### Linux/Mac OS X/Cygwin ###
-
-Libigl may also be compiled to a static library. This is advantageous when
-building a project with libigl, since when used as an header-only library can
-slow down compile times.
-
-To build the entire libigl library producing lib/libigl.a, issue:
-
-    cd build
-    make lib
-
-You may need to edit Makefile.conf accordingly. Best to give yourself an
-`IGL_USERNAME` and add a custom install suite for yourself. Then you can enable
-appropriate extras.
-
-#### Extras ####
-Once you've set up an `IGL_USERNAME` and enabled extras within Makefile.conf.
-You can build the extra libraries (into lib/ligiglpng.a, lib/libiglmatlab.a,
-lib/libigltetgen.a, lib/libiglmosek.a, etc.) by issuing:
-
-    cd build
-    make extras
-
-#### Examples ####
-You can make a slew of examples by issuing:
-
-    cd build
-    make examples
-
-#### External ####
-Finally there are a number of external libraries that we include in
-./external/ because they are either difficult to obtain or they have been
-patched for easier use with libigl. Please see the respective readmes in
-those directories.
-
-
-##### Installing AntTweakBar #####
-To build the a static AntTweakBar library on Mac OS X issue:
-
-    cd external/AntTweakBar/src
-    make -f Makefile.osx.igl
-
-##### Installing Tetgen #####
-To build the tetgen library and executable on Mac OS X issue:
-
-    cd external/tetgen
-    make clean
-    rm -f obj/*.o
-    make -f Makefile.igl tetgen
-    rm -f obj/*.o
-    make -f Makefile.igl tetlib
-
-##### Installing medit #####
-To build the igl version of the medit executable on Mac OS X issue:
-
-    cd external/medit
-    make -C libmesh
-    make -f Makefile.igl medit
-
-##### Installing Embree 2.0 #####
-To build the embree library and executables on Mac OS X issue:
-
-    cd external/embree
-    mkdir build
-    cd build
-    cmake ..
-    # Or using a different compiler
-    #cmake .. -DCMAKE_C_COMPILER=/opt/local/bin/gcc -DCMAKE_CXX_COMPILER=/opt/local/bin/g++
-    make
-    # Could also install embree to your root, but libigl examples don't expect
-    # this
-    #sudo make install
-
-##### Installing tinyxml2 #####
-To build the a static tinyxml2 library on Mac OS X issue:
-
-    cd external/tinyxml2
-    cmake .
-    make
-
-
-##### Installing YImg #####
-To build the a static YImg library on Mac OS X issue:
-
-    cd external/yimg
-    make
-
-You may need to install libpng. Systems with X11 might find this already
-installed at `/usr/X11/lib`.
-
-
-### Windows (Experimental) ###
-To build a static library (.lib) on windows, open Visual Studio 2010.
-
-- New > Project ...
-- Visual C++ > Win32
-- Win32 Console Application
-- Name: libiglVisualStudio
-- Uncheck "Create directory for solution"
-- Then hit OK, and then Next
-- Check "Static Library"
-- Uncheck "Precompiled headers"
-- Add all include/igl/*.cpp to the sources directory
-- Add all include/igl/*.h to the headers directory
-- Open Project > libigl Properties...
-- Add the path to eigen3 to the include paths
-- Change the target name to libigl
-- Build and pray (this should create libigl.lib
-
-[Source](http://msdn.microsoft.com/en-us/library/ms235627(v=vs.80).aspx)
-
-## Examples ##
-To get started, we advise that you take a look at a few examples:
-
-    ./examples/hello-world/
-
-    ./examples/meshio/
-
-    ./examples/basic-topology/
-
-    ./examples/ReAntTweakBar/
-
-## Extras ##
-Libigl compartmentalizes dependences via its organization into a _main_ libigl
-library and "extras."
-
-
-### bbw ###
-This library extra contains functions for computing Bounded Biharmonic Weights, can
-be used with and without the [mosek](#mosek) extra via the `IGL_NO_MOSEK`
-macro.
-
-### boost ###
-This library extra utilizes the graph functions in the boost library for find
-connected components and performing breadth-first traversals.
-
-### cgal ###
-This library extra utilizes CGAL's efficient and exact intersection and
-proximity queries.
-
-### embree ###
-This library extra utilizes embree's efficient ray tracing queries.
-
-### matlab ###
-This library extra provides support for reading and writing `.mat` workspace
-files, interfacing with Matlab at run time and compiling mex functions.
-
-### mosek ###
-This library extra utilizes mosek's efficient interior-point solver for
-quadratic programs.
-
-### png ###
-This library extra uses `libpng` and `YImage` to read and write `.png` files.
-
-### svd3x3 ###
-This library extra implements "as-rigid-as-possible" (ARAP) deformation
-techniques using the fast singular value decomposition routines
-written specifically for 3x3 matrices to use `SSE` intrinsics. This extra can
-still be compiled without sse support and support should be determined
-automatically at compile time via the `__SSE__` macro.
-
-### tetgen ###
-This library extra provides a simplified wrapper to the tetgen 3d tetrahedral meshing
-library.
-
-### viewer ###
-This library extra utilizes glfw and glew to open an opengl context and launch
-a simple mesh viewer.
-
-### xml ###
-This library extra utilizes tinyxml2 to read and write serialized classes
-containing Eigen matrices and other standard simple data-structures.
-
-## Development ##
-Further documentation for developers is listed in tutorial.html,
-style_guidelines.html
-
-## License ##
-See `LICENSE.txt`
-
-## Zipping ##
-Zip this directory without .git litter and binaries using:
-
-    git archive -prefix=libigl/ -o libigl.zip master
-
-## Version 1.0 Changes ##
-Our beta release marks our confidence that this library can be used outside of
-casual experimenting. To maintain order, we have made a few changes which
-current users should read and adapt their code accordingly.
-
-### Renamed functions ###
-The following table lists functions which have changed name as of version
-1.0.0:
-
-Old                              | New
--------------------------------- | -------------------------------------
-`igl::add_barycenter`            | `igl::false_barycentric_subdivision`
-`igl::areamatrix`                | `igl::vector_area_matrix`
-`igl::barycentric2global`        | `igl::barycentric_to_global`
-`igl::boundary_faces`            | `igl::boundary_facets`
-`igl::boundary_vertices_sorted`  | `igl::boundary_loop`
-`igl::cotangent`                 | `igl::cotmatrix_entries`
-`igl::edgetopology`              | `igl::edge_topology`
-`igl::gradMat`                   | `igl::grad`
-`igl::is_manifold`               | `igl::is_edge_manifold`
-`igl::mexStream`                 | `igl::MexStream`
-`igl::moveFV`                    | `igl::average_onto_vertices`
-`igl::moveVF`                    | `igl::average_onto_faces`
-`igl::plot_vector`               | `igl::print_vector`
-`igl::pos`                       | `igl::HalfEdgeIterator`
-`igl::plane_project`             | `igl::project_isometrically_to_plane`
-`igl::project_points_mesh`       | `igl::line_mesh_intersection`
-`igl::read`                      | `igl::read_triangle_mesh`
-`igl::removeDuplicates.cpp`      | `igl::remove_duplicates`
-`igl::removeUnreferenced`        | `igl::remove_unreferenced`
-`igl::tt`                        | `igl::triangle_triangle_adjacency`
-`igl::vf`                        | `igl::vertex_triangle_adjacency`
-`igl::write`                     | `igl::write_triangle_mesh`
-`igl::manifold_patches`          | `igl::orientable_patches`
-`igl::selfintersect`             | `igl::remesh_self_intersections`
-`igl::project_mesh`              | `igl::line_mesh_intersection`
-`igl::triangulate`               | `igl::polygon_mesh_to_triangle_mesh`
-`igl::is_manifold`               | `igl::is_edge_manifold`
-`igl::triangle_wrapper`          | `igl::triangulate`
-
-### Miscellaneous ###
- - To match interfaces provided by (all) other quadratic optimization
-   libraries, `igl::min_quad_with_fixed` and `igl::active_set` now expect as
-   input twice the quadratic coefficients matrix, i.e. the Hessian. For
-   example, `igl::min_quad_with_fixed(H,B,...)` minimizes $\frac{1}{2}x^T H
-   x+x^T B$.
- - We have inverted the `IGL_HEADER_ONLY` macro to `IGL_STATIC_LIBRARY`. To
-   compile using libigl as a header-only library, simply include headers and
-   libigl in the header search path. To link to libigl, you must define the
-   `IGL_STATIC_LIBRARY` macro at compile time and link to the `libigl*.a`
-   libraries.
- - Building libigl as a static library is now more organized. There is a
-   `build/` directory with Makefiles for the main library (`Makefile`) and each
-   dependency (e.g. `Makefile_mosek` for `libiglmosek.a`)
- - `igl::polar_svd` now always returns a rotation in `R`, never a reflection.
-   This mirrors the behavior of `igl::polar_svd3x3`.  Consequently the `T`
-   part may have negative skews.
- - We have organized the static
- - The previous `igl::grad` function, which computed the per-triangle gradient
-   of a per-vertex scalar function has been replaced. Now `igl::grad` computes
-   the linear operator (previous computed using `igl::gradMat`). The gradient
-   values can still be recovered by multiplying the operator against the scalar
-   field as a vector and reshaping to have gradients per row.
- - `MASSMATRIX_*` has become `MASSMATRIX_TYPE_*`
- - The function `igl::project_normals`, which cast a line for each vertex of
-   mesh _A_ in the normal direction and found the closest intersection along
-   these lines with mesh _B_, has been removed.
-
-## Contact ##
-Libigl is a group endeavor led by Alec Jacobson and Daniele Panozzo. Please
-contact [alecjacobson@gmail.com](mailto:alecjacobson@gmail.com) if you have
-questions or comments. We are happy to get feedback! Enjoy!
-
-If you're using libigl in your projects, quickly [drop us a
-note](mailto:alecjacobson@gmail.com). Tell us who you are and what you're using
-it for. This helps us apply for funding and justify spending time maintaining
-this.
-
-If you find bugs or have problems please use our [github issue tracking
-page](https://github.com/libigl/libigl/issues).
-
-## Academic citation ##
-If you use libigl in your research projects, please cite the papers we
+## Dependencies
+Dependencies are on a per-include basis and the majority of the functions in
+libigl depends only on the [Eigen](http://eigen.tuxfamily.org) library.
+
+For more information see our [tutorial](tutorial/tutorial.html).
+
+### Optional dependencies
+
+Libigl compartmentalizes its **optional** dependences via its directory
+organization in the `include/` folder. All header files located _directly_ in
+the `include/igl/` folder have only stl and Eigen as dependencies. For example,
+all of the headers that depend on CGAL are located in `include/igl/cgal`. For a
+full list of _optional_ dependencies check `optional/CMakeLists.txt`.
+
+### GCC and the optional CGAL dependency
+The `include/igl/cgal/*.h` headers depend on CGAL. It has come to our attention
+that CGAL does not work properly with GCC 4.8. To the best of our knowledge,
+GCC 4.7 and clang will work correctly.
+
+### OpenMP and Windows
+Some of our functions will take advantage of OpenMP if available. However, it
+has come to our attention that Visual Studio + Eigen + OpenMP does not work
+properly. Since we use OpenMP only to improve performance, we recommend
+avoiding OpenMP on Windows or proceeding with caution.
+
+## Download
+You can keep up to date by cloning a read-only copy of our GitHub
+[repository](https://github.com/libigl).
+
+## Known Issues
+We rely heavily on Eigen. Nearly all inputs and outputs are Eigen matrices of
+some kind. However, we currently _only_ officially support Eigen's default
+column-major ordering. That means, we **do not** expect our code to work for
+matrices using the `Eigen::RowMajor` flag. If you can, change definitions like:
+
+```cpp
+Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> A;
+```
+
+to
+
+```cpp
+Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::ColMajor> A;
+// or simply
+Eigen::Matrix<double, Eigen::Dynamic, 3> A;
+```
+
+We hope to fix this, or at least identify which functions are safe (many of
+them probably work just fine). This requires setting up unit testing, which is
+a major _todo_ for our development.
+
+## Git Submodules
+Libigl uses git submodules for its _optional_ dependencies,
+in particular, those needed by the OpenGL viewer to run the examples in the
+[tutorial](tutorial/tutorial.html). Git submodules allow use to treat clones of
+other libraries as sub-directories within ours while separating our commits.
+Read the [documentation](http://git-scm.com/docs/git-submodule) for a detailed
+explanation, but essentially our libigl repo stores a hash for each of its
+subrepos containing which version to update to. When a change is introduced in
+a dependencies repo we can incorporate that change by pulling in our sub-repo
+and updating (i.e.  committing) that change to the hash.
+
+When pulling new changes to libigl it's also a good idea to update changes to
+subrepos:
+
+```bash
+git pull
+git submodule update --recursive
+```
+
+## Unit testing
+
+Libigl maintains [separate
+repository](https://github.com/libigl/libigl-unit-tests) for unit testing.
+
+## How to contribute
+
+If you are interested in joining development, please fork the repository and
+submit a [pull request](https://help.github.com/articles/using-pull-requests/)
+with your changes.
+
+## License
+libigl is primarily [MPL2](http://www.mozilla.org/MPL/2.0/) licensed
+([FAQ](http://www.mozilla.org/MPL/2.0/FAQ.html)). Some files contain
+third-party code under other licenses. We're currently in the processes of
+identifying these and marking appropriately.
+
+## Attribution
+If you use libigl in your academic projects, please cite the papers we
 implement as appropriate. To cite the library in general, you could use this
 BibTeX entry:
 
@@ -405,7 +188,75 @@ BibTeX entry:
 @misc{libigl,
   title = {{libigl}: A simple {C++} geometry processing library},
   author = {Alec Jacobson and Daniele Panozzo and others},
-  note = {http://igl.ethz.ch/projects/libigl/},
-  year = {2014},
+  note = {http://libigl.github.io/libigl/},
+  year = {2016},
 }
 ```
+
+## Projects/Universities using libigl
+Libigl is used by many research groups around the world. In 2015, it won the
+Eurographics/ACM Symposium on Geometry Processing software award. Here are a
+few labs/companies/institutions using libigl:
+
+ - [Activision](http://www.activision.com)
+ - [Adobe Research](http://www.adobe.com/technology/)  
+ - [Electronic Arts, Inc](http://www.ea.com)
+ - [Epic Games](https://epicgames.com)
+ - [Google Research](https://research.google.com)
+ - [Mesh](http://meshconsultants.ca/), consultants, Canada
+ - [Pixar Research](http://graphics.pixar.com/research/)
+ - [Spine by Esoteric Software](http://esotericsoftware.com/) is an animation tool dedicated to 2D characters.
+ - Columbia University, [Columbia Computer Graphics Group](http://www.cs.columbia.edu/cg/), USA
+ - [Cornell University](http://www.graphics.cornell.edu/), USA
+ - [Czech Technical University in Prague](http://dcgi.felk.cvut.cz/), Czech
+ - EPF Lausanne, [Computer Graphics and Geometry Laboratory](http://lgg.epfl.ch/people.php), Switzerland
+ - ETH Zurich, [Interactive Geometry Lab](http://igl.ethz.ch/) and [Advanced Technologies Lab](http://ait.inf.ethz.ch/), Swizterland
+ - George Mason University, [CraGL](http://cs.gmu.edu/~ygingold/), USA
+ - [Hong Kong University of Science and Technology](http://www.ust.hk/), Hong Kong
+ - [Inria, Université Grenoble Alpes](https://www.inria.fr/centre/grenoble/), France
+ - [Jiangnan university](http://english.jiangnan.edu.cn), China
+ - [National Institute of Informatics](http://www.nii.ac.jp/en/), Japan
+ - New York University, [Media Research Lab](http://mrl.nyu.edu/), USA
+ - NYUPoly, [Game Innovation Lab](http://game.engineering.nyu.edu/), USA
+ - [TU Berlin](https://www.cg.tu-berlin.de), Germany
+ - [TU Delft](http://www.tudelft.nl/en/), Netherlands
+ - [TU Wien](https://www.tuwien.ac.at/en/tuwien_home/), Austria
+ - [Telecom ParisTech](http://www.telecom-paristech.fr/en/formation-et-innovation-dans-le-numerique.html), Paris, France
+ - [Utrecht University](http://www.staff.science.uu.nl/~vaxma001/), The Netherlands
+ - [Universidade Federal de Santa Catarina](http://mtm.ufsc.br/~leo/), Brazil
+ - [University College London](http://vecg.cs.ucl.ac.uk/), England
+ - [University of California Berkeley](http://vis.berkeley.edu/), USA
+ - [University of Cambridge](http://www.cam.ac.uk/), England
+ - [University of Pennsylvania](http://cg.cis.upenn.edu/), USA
+ - [University of Texas at Austin](http://www.cs.utexas.edu/users/evouga/), USA
+ - [University of Toronto](http://dgp.toronto.edu), Canada
+ - [University of Victoria](https://www.csc.uvic.ca/Research/graphics/), Canada
+ - [University of Wisconsin-Eau Claire](http://www.uwec.edu/computer-science/), USA
+ - [Università della Svizzera Italiana](http://www.usi.ch/en), Switzerland
+ - [Université Toulouse III Paul Sabatier](http://www.univ-tlse3.fr/), France
+ - [Zhejiang University](http://www.math.zju.edu.cn/cagd/), China
+
+
+## Contact
+
+Libigl is a group endeavor led by [Alec
+Jacobson](http://www.cs.toronto.edu/~jacobson/) and [Daniele
+Panozzo](http://www.inf.ethz.ch/personal/dpanozzo/). Please [contact
+us](mailto:alecjacobson@gmail.com,daniele.panozzo@gmail.com) if you have
+questions or comments. For troubleshooting, please post an
+[issue](https://github.com/libigl/libigl/issues) on github.
+
+If you're using libigl in your projects, quickly [drop us a
+note](mailto:alecjacobson@gmail.com,daniele.panozzo@gmail.com). Tell us who you
+are and what you're using it for. This helps us apply for funding and justify
+spending time maintaining this.
+
+If you find bugs or have problems please use our [github issue tracking
+page](https://github.com/libigl/libigl/issues).
+
+## Copyright
+2016 Alec Jacobson, Daniele Panozzo, Christian Schüller, Olga Diamanti, Qingnan
+Zhou, Sebastian Koch, Amir Vaxman, Nico Pietroni, Stefan Brugger, Kenshi Takayama, Wenzel Jakob, Nikolas De
+Giorgis, Luigi Rocca, Leonardo Sacht, Kevin Walliman, Olga Sorkine-Hornung, and others.
+
+Please see individual files for appropriate copyright notices.
